@@ -60,10 +60,14 @@ type Record = {
  */
 export const convertChangeData = (
   columns: Columns,
-  record: Record,
+  record: Record | null,
   options: { skipTypes?: string[] } = {}
 ): Record => {
   const skipTypes = options.skipTypes ?? []
+
+  if (!record) {
+    return {}
+  }
 
   return Object.keys(record).reduce((acc, rec_key) => {
     acc[rec_key] = convertColumn(rec_key, columns, record, skipTypes)
@@ -106,7 +110,7 @@ export const convertColumn = (
  * If the value of the cell is `null`, returns null.
  * Otherwise converts the string value to the correct type.
  * @param {String} type A postgres column type
- * @param {String} stringValue The cell value
+ * @param {String} value The cell value
  *
  * @example convertCell('bool', 't')
  * //=> true
@@ -244,4 +248,11 @@ export const toTimestampString = (value: RecordValue): RecordValue => {
   }
 
   return value
+}
+
+export const httpEndpointURL = (socketUrl: string): string => {
+  let url = socketUrl
+  url = url.replace(/^ws/i, 'http')
+  url = url.replace(/(\/socket\/websocket|\/socket|\/websocket)\/?$/i, '')
+  return url.replace(/\/+$/, '') + '/api/broadcast'
 }
